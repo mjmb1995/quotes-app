@@ -82,7 +82,34 @@ app.delete("/api/quotes/:id", function(req, res) {
   });
 });
 
+app.get("/:id", function(req, res){
+  connection.query("SELECT * FROM quotes where id = ? ", [req.params.id],
+    function(err, data){
+      if(err){
+        return res.status(500).end();
+      }
 
+      console.log(data);
+      res.render("single-quote", data[0]);
+    })
+})
+
+// Update a quote by an id and then redirect to the root route.
+app.put("/api/quotes/:id", function(req, res) {
+  connection.query("UPDATE quotes SET author = ?, quote = ? WHERE id = ?", [
+    req.body.author, req.body.quote, req.params.id
+  ], function(err, result) {
+    if (err) {
+      // If an error occurred, send a generic server faliure
+      return res.status(500).end();
+    } else if (result.changedRows == 0) {
+      // If no rows were changed, then the ID must not exist, so 404
+      return res.status(404).end();
+    } else {
+      res.status(200).end();
+    }
+  });
+});
 
 
 app.listen(port, function() {
